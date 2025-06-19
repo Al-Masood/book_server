@@ -35,12 +35,11 @@ func postBook(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&book)
 
 	if err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadGateway)
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 	}
 
 	books[book.UUID]=book
 
-	
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(book)
 }
@@ -48,9 +47,13 @@ func postBook(w http.ResponseWriter, r *http.Request) {
 func getBookByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
+	if _, exists := books[id]; !exists {
+		http.Error(w, "Book doesn't exist", http.StatusBadRequest)
+		return
+	}
+
 	book := books[id]
 
-	
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(book)
 }
@@ -60,7 +63,6 @@ func getBookAllBooks(w http.ResponseWriter, r *http.Request) {
 	for _, book := range books {
 		bookSlice = append(bookSlice, book)
 	}
-
 	
 	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(bookSlice)
@@ -68,6 +70,11 @@ func getBookAllBooks(w http.ResponseWriter, r *http.Request) {
 
 func putBook(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+
+	if _, exists := books[id]; !exists {
+		http.Error(w, "No book with specified UUID exists", http.StatusBadRequest)
+		return
+	}
 
 	var book Book
 	json.NewDecoder(r.Body).Decode(&book)
@@ -81,6 +88,11 @@ func putBook(w http.ResponseWriter, r *http.Request) {
 
 func deleteBook(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+
+	if _, exists := books[id]; !exists {
+		http.Error(w, "No book with specified UUID exists", http.StatusBadRequest)
+		return
+	}
 
 	var book Book
 	json.NewDecoder(r.Body).Decode(&book)
