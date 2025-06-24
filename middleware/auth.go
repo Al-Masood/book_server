@@ -1,10 +1,13 @@
-package handler
+package authMiddleware
 
 import (
-	"github.com/al-masood/book_server/handler"
 	"encoding/base64"
 	"net/http"
 	"strings"
+
+	"github.com/al-masood/book_server/handler"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -36,12 +39,14 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		if strings.HasPrefix(auth, "Bearer") {
-			tokenStr := strings.TrimPrefix(auth, "Bearer ")
+			tokenString := strings.TrimPrefix(auth, "Bearer ")
 
-			_, err := handler.TokenAuth.Decode(tokenStr)
-		
-			if err != nil {
-				http.Error(w, "Invalid Token", http.StatusUnauthorized)
+		    token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+				return handler.ServerPrivateKey, nil
+			})
+
+			if err != nil || !token.Valid {
+				http.Error(w, "Invalid token", http.StatusUnauthorized)
 				return 
 			}
 

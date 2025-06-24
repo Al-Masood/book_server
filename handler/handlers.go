@@ -3,9 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 
@@ -21,7 +22,6 @@ var Books = make(map[string]Book)
 var AdminUser = "user"
 var AdminPassword = "password"
 var ServerPrivateKey = []byte("secret")
-var TokenAuth *jwtauth.JWTAuth
 
 
 func PostBook(w http.ResponseWriter, r *http.Request) {
@@ -100,8 +100,15 @@ func DeleteBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetToken (w http.ResponseWriter, r *http.Request) {
-	token := jwtauth.New("HS256", ServerPrivateKey, nil)
-	_, tokenString, err := token.Encode(map[string]interface{}{})
+	claims := jwt.MapClaims{
+		"username": "user",
+		"exp":      time.Now().Add(time.Minute).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString(ServerPrivateKey)
+
 
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)

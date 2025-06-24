@@ -8,7 +8,6 @@ import (
 	myMiddleware "github.com/al-masood/book_server/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/jwtauth"
 
 	"github.com/spf13/cobra"
 )
@@ -24,7 +23,6 @@ var serveCmd = &cobra.Command{
 	Short: "Start the http server",
 	Run: func(cmd *cobra.Command, args []string) {
 		handler.ServerPrivateKey = []byte(secret)
-		handler.TokenAuth = jwtauth.New("HS256", handler.ServerPrivateKey, nil)
 
         r := chi.NewRouter()
         r.Use(middleware.Logger)
