@@ -43,6 +43,6 @@ go build -o book_server
 ## Running with Docker
 
 ```bash
-docker pull almasood/book_server:latest
-docker run -d --name book_server almasood/book_server:latest serve
+docker pull almasood/book-server:latest
+docker run -d -p 3000:3000 --name book_server almasood/book-server:latest serve
 ```
