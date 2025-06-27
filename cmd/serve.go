@@ -1,50 +1,60 @@
 package cmd
 
 import (
-	"log"
-	"net/http"
-
+	"fmt"
+	"github.com/al-masood/book_server/domain/service"
 	"github.com/al-masood/book_server/handler"
-	myMiddleware "github.com/al-masood/book_server/middleware"
+	"github.com/al-masood/book_server/infrastructure/persistance/inmemory"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-
 	"github.com/spf13/cobra"
+	"net/http"
 )
 
 var (
-	port			string
-	secret			string
-	authRequired 	bool
+	port         string
+	secret       string
+	authRequired bool
 )
+
+type Server struct {
+	Router  *chi.Mux
+	Handler *handler.Handler
+}
+
+func CreateNewServer(handler *handler.Handler) *Server {
+	s := &Server{
+		Handler: handler,
+	}
+	s.Router = chi.NewRouter()
+	return s
+}
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the http server",
 	Run: func(cmd *cobra.Command, args []string) {
-		handler.ServerPrivateKey = []byte(secret)
 
-        r := chi.NewRouter()
-        r.Use(middleware.Logger)
+		repos := inmemory.GetRepositories()
+		services := service.GetServices(repos)
 
-		if authRequired {
-        	r.Use(myMiddleware.AuthMiddleware)
+		handlers := handler.GetHandlers(services)
+		s := CreateNewServer(handlers)
+		s.mountHandlers()
+		err := http.ListenAndServe(":8080", s.Router)
+		if err != nil {
+			fmt.Printf("error : %s\n", err.Error())
 		}
-
-        r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-            w.Write([]byte("Hello World"))
-        })
-
-        r.Post("/api/v1/books", handler.PostBook)
-        r.Get("/api/v1/books/{id}", handler.GetBookByID)
-        r.Get("/api/v1/books", handler.GetBookAllBooks)
-        r.Put("/api/v1/books/{id}", handler.PutBook)
-        r.Delete("/api/v1/books/{id}", handler.DeleteBook)
-        r.Get("/api/v1/get-token", handler.GetToken)
-
-        log.Printf("Starting server on %s", port)
-        http.ListenAndServe(":" + port, r)
 	},
+}
+
+func (s *Server) mountHandlers() {
+	s.Router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte("Hello World"))
+	})
+	s.Router.Post("/api/registerUser", s.Handler.UserHandler.Register)
+	s.Router.Group(func(r chi.Router) {
+
+	})
 }
 
 func init() {
