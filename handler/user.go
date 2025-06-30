@@ -25,6 +25,6 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
         return
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]any{"token": tokenString})
 }

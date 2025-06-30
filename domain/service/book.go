@@ -3,8 +3,7 @@ package service
 import (
 	"context"
 	"errors"
-	"time"
-
+	
 	"github.com/al-masood/book_server/domain/entity"
 	"github.com/al-masood/book_server/domain/repository"
 )
@@ -25,7 +24,7 @@ func (s *bookService) Create(ctx context.Context, book *entity.Book) error {
 	if book == nil || book.UUID == "" || book.Name == "" {
 		return errors.New("book, UUID, and name are required")
 	}
-	
+
 	return s.bookRepo.Create(ctx, book)
 }
 
@@ -33,6 +32,7 @@ func (s *bookService) GetByID(ctx context.Context, id string) (*entity.Book, err
 	if id == "" {
 		return nil, errors.New("ID is required")
 	}
+
 	return s.bookRepo.GetByID(ctx, id)
 }
 
@@ -44,10 +44,11 @@ func (s *bookService) Update(ctx context.Context, id string, book *entity.Book) 
 	if id == "" || book == nil || book.UUID == "" {
 		return errors.New("valid ID and book are required")
 	}
+
 	if id != book.UUID {
 		return errors.New("ID mismatch between path and book UUID")
 	}
-	book.PublishDate = time.Now().Format("2006-01-02") 
+
 	return s.bookRepo.Update(ctx, id, book)
 }
 
@@ -55,6 +56,7 @@ func (s *bookService) Delete(ctx context.Context, id string) error {
 	if id == "" {
 		return errors.New("ID is required")
 	}
+
 	return s.bookRepo.Delete(ctx, id)
 }
 
