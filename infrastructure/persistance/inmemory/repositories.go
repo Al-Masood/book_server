@@ -7,5 +7,6 @@ import (
 func GetRepositories() *repository.Repositories {
 	return &repository.Repositories{
 		UserRepository: NewUserRepository(),
+		BookRepository: NewBookRepository(),
 	}
 }

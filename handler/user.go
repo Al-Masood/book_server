@@ -1,8 +1,10 @@
 package handler
 
 import (
-	"github.com/al-masood/book_server/domain/service"
+	"encoding/json"
 	"net/http"
+
+	"github.com/al-masood/book_server/domain/service"
 )
 
 type UserHandler struct {
@@ -15,20 +17,14 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	}
 }
 
-func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-}
+func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
+	tokenString, err := h.userService.GetToken(r.Context())
+	
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+        return
+	}
 
-func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-}
-
-func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-}
-
-func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
-}
-
-func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-}
-
-func (h *UserHandler) DeleteUser() {
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(map[string]any{"token": tokenString})
 }

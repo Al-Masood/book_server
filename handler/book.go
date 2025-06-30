@@ -2,9 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/al-masood/book_server/domain/entity"
 	"github.com/al-masood/book_server/domain/service"
-	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -19,23 +20,28 @@ func NewBookHandler(bookService service.BookService) *BookHandler {
 	}
 }
 
-func (h *BookHandler) PostBook(w http.ResponseWriter, r *http.Request) {
+func (h *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	var book entity.Book
+
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
+
 	if err := h.BookService.Create(r.Context(), &book); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(book)
 }
 
 func (h *BookHandler) GetBookByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+
 	book, err := h.BookService.GetByID(r.Context(), id)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -54,7 +60,7 @@ func (h *BookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(books)
 }
 
-func (h *BookHandler) PutBook(w http.ResponseWriter, r *http.Request) {
+func (h *BookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	var book entity.Book
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {

@@ -5,14 +5,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/al-masood/book_server/config"
 	"github.com/golang-jwt/jwt/v5"
 	"errors"
 	"context"
 )
-
-var AdminUser = "user"
-var AdminPassword = "password"
-var ServerPrivateKey = "private-key"
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +27,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				return
 			}
 
-			validUserPassword := AdminUser + ":" + AdminPassword
+			validUserPassword := config.APIConfig.AdminUser + ":" + config.APIConfig.AdminPassword
 			if validUserPassword != string(decodedUserPassword) {
 				http.Error(w, "Wrong username or password", http.StatusUnauthorized)
 				return
@@ -43,7 +40,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, errors.New("unexpected signing method")
 				}
-				return ServerPrivateKey, nil
+				return config.APIConfig.ServerPrivateKey, nil
 			})
 
 			if err != nil || !token.Valid {

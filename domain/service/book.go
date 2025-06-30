@@ -25,7 +25,7 @@ func (s *bookService) Create(ctx context.Context, book *entity.Book) error {
 	if book == nil || book.UUID == "" || book.Name == "" {
 		return errors.New("book, UUID, and name are required")
 	}
-	book.PublishDate = time.Now().Format("2006-01-02")
+	
 	return s.bookRepo.Create(ctx, book)
 }
 
