@@ -1,6 +1,7 @@
 package server
 
 import (
+	authMiddleware "github.com/al-masood/book_server/middleware"
 	"log"
 	"net/http"
 
@@ -8,15 +9,13 @@ import (
 	"github.com/al-masood/book_server/domain/service"
 	"github.com/al-masood/book_server/handler"
 	"github.com/al-masood/book_server/infrastructure/persistance/inmemory"
-	authMiddleware "github.com/al-masood/book_server/middleware"
-
 	"github.com/go-chi/chi/v5"
 )
 
 type Server struct {
-	Router      *chi.Mux
-	UserHandler *handler.UserHandler
-	BookHandler *handler.BookHandler
+	Router       *chi.Mux
+	UserHandler  *handler.UserHandler
+	BookHandler  *handler.BookHandler
 	AuthRequired bool
 }
 
@@ -40,9 +39,14 @@ func (s *Server) mountHandlers() {
 		w.Write([]byte("Hello World"))
 	})
 
+	s.Router.Post("/api/v1/register", s.UserHandler.Register)
+
 	if s.AuthRequired {
 		s.Router.Route("/api/v1", func(r chi.Router) {
-			r.Use(authMiddleware.AuthMiddleware)
+			r.Use(func(next http.Handler) http.Handler {
+				return authMiddleware.AuthMiddleware(s.UserHandler.UserService, next)
+			})
+
 			r.Post("/books", s.BookHandler.CreateBook)
 			r.Get("/books", s.BookHandler.GetAllBooks)
 			r.Get("/books/{id}", s.BookHandler.GetBookByID)

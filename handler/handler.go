@@ -1,4 +1,3 @@
-// handler/handler.go
 package handler
 
 import "github.com/al-masood/book_server/domain/service"

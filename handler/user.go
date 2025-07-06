@@ -2,27 +2,46 @@ package handler
 
 import (
 	"encoding/json"
-	"net/http"
-
+	"github.com/al-masood/book_server/domain/entity"
 	"github.com/al-masood/book_server/domain/service"
+	"net/http"
 )
 
 type UserHandler struct {
-	userService service.UserService
+	UserService service.UserService
 }
 
 func NewUserHandler(userService service.UserService) *UserHandler {
 	return &UserHandler{
-		userService: userService,
+		UserService: userService,
 	}
 }
 
+func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+	var user entity.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	err = h.UserService.Register(r.Context(), &user)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(user)
+}
+
 func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
-	tokenString, err := h.userService.GetToken(r.Context())
-	
+	tokenString, err := h.UserService.GetToken(r.Context())
+
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
-        return
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
