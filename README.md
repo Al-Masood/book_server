@@ -1,3 +1,13 @@
+## User Struct
+
+```
+User struct {
+	ID          string   
+	Username    string   
+	Password    string 
+}
+```
+
 ## Book Struct
 
 ```
@@ -12,23 +22,24 @@ Book struct {
 
 ## API Endpoints
 
-| Method   | Endpoint      | Description        | Auth Required | 
-| -------- | ------------- | ------------------ | ------------- |
-| `POST`   | `/get-token`  | Generate JWT token | Basic         |
-| `POST`   | `/books`      | Create a new book  | Basic/Bearer  | 
-| `GET`    | `/books`      | Get all books      | Basic/Bearer  |
-| `GET`    | `/books/{id}` | Get book by UUID   | Basic/Bearer  |
-| `PUT`    | `/books/{id}` | Update a book      | Basic/Bearer  |
-| `DELETE` | `/books/{id}` | Delete a book      | Basic/Bearer  |
+| Method   | Endpoint             | Description        | Auth Required | Body |
+|----------|----------------------|--------------------|---------------|------|
+| `POST`   | `/api/v1/register`   | Register           | No            | User |
+| `GET`    | `/api/v1/get-token`  | Generate JWT token | Basic         |      |
+| `POST`   | `/api/v1/books`      | Create a new book  | Basic/Bearer  | Book |
+| `GET`    | `/api/v1/books`      | Get all books      | Basic/Bearer  |      |
+| `GET`    | `/api/v1/books/{id}` | Get book by UUID   | Basic/Bearer  |      |
+| `PUT`    | `/api/v1/books/{id}` | Update a book      | Basic/Bearer  |      |
+| `DELETE` | `/api/v1/books/{id}` | Delete a book      | Basic/Bearer  |      |
 
 
 ## CLI Flags
 
-| Flag             | Shorthand | Type   | Default    | Description                                                                                                                       |
-| ---------------- | --------- | ------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `--port`         | `-p`      | string | `"3000"`   | The port number on which the server will listen. Example: `--port=8080`                                                           |
-| `--secret`       | `-s`      | string | `"secret"` | The secret key used to sign JWT tokens. Example: `--secret=mySecretKey123`                                                        |
-| `--authRequired` | *(none)*  | bool   | `true`     | Enable or disable JWT authentication middleware. Use `--authRequired=false` to disable authentication for testing or open access. |
+| Flag        | Shorthand | Type   | Default    | Description                                                                                                                       |
+|-------------|-----------| ------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `--port`    | `-p`      | string | `"3000"`   | The port number on which the server will listen. Example: `--port=8080`                                                           |
+| `--secret`  | `-s`      | string | `"secret"` | The secret key used to sign JWT tokens. Example: `--secret=mySecretKey123`                                                        |
+| `--auth`    |           | bool   | `true`     | Enable or disable JWT authentication middleware. Use `--authRequired=false` to disable authentication for testing or open access. |
 
 
 ## Running Locally
