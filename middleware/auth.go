@@ -1,57 +1,45 @@
 package authMiddleware
 
 import (
-	"encoding/base64"
+	"github.com/al-masood/book_server/domain/service"
 	"net/http"
 	"strings"
-
-	"github.com/al-masood/book_server/handler"
-
-	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+func AuthMiddleware(userService service.UserService, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
-
-		if !strings.HasPrefix(auth, "Basic") && !strings.HasPrefix(auth, "Bearer"){
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return 
+		if auth == "" {
+			http.Error(w, "Authorization header required", http.StatusUnauthorized)
+			return
 		}
 
+		ctx := r.Context()
+
 		if strings.HasPrefix(auth, "Basic") {
-			userpassword := strings.TrimPrefix(auth, "Basic ")
-			
-			decodedUserpassword, err := base64.StdEncoding.DecodeString(userpassword)
+			credentials := strings.TrimPrefix(auth, "Basic ")
+
+			err := userService.AuthenticateBasic(ctx, credentials)
 
 			if err != nil {
-				http.Error(w, "Error decoding username and password", http.StatusBadRequest)
-			}
-
-			validUserpassword := handler.AdminUser + ":" + handler.AdminPassword
-
-			if validUserpassword != string(decodedUserpassword) {
-				http.Error(w, "Wrong username or password", http.StatusUnauthorized)
+				http.Error(w, "Authentication failed", http.StatusUnauthorized)
 				return
 			}
 
 			next.ServeHTTP(w, r)
-		}
+		} else if strings.HasPrefix(auth, "Bearer") {
+			token := strings.TrimPrefix(auth, "Bearer ")
 
-		if strings.HasPrefix(auth, "Bearer") {
-			tokenString := strings.TrimPrefix(auth, "Bearer ")
+			err := userService.AuthenticateBearer(ctx, token)
 
-		    token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-				return handler.ServerPrivateKey, nil
-			})
-
-			if err != nil || !token.Valid {
-				http.Error(w, "Invalid token", http.StatusUnauthorized)
-				return 
+			if err != nil {
+				http.Error(w, "Authentication failed", http.StatusUnauthorized)
+				return
 			}
-
 			next.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "Unsupported authentication method", http.StatusUnauthorized)
+			return
 		}
-
 	})
 }
